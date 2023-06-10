@@ -27,3 +27,16 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/immersive-project1:latest
+      - name: Connect to server using SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            docker stop immersive-project1
+            docker rm immersive-project1
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/immersive-project1
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/immersive-project1
+            docker run -d -p 80:8080 -e JWT_ACCESS_TOKEN=${{ secrets.JWT_ACCESS_TOKEN }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASS=${{ secrets.DB_PASS }} -e DB_HOSTNAME=${{ secrets.DB_HOSTNAME }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME }} --name immersive-dashboard-container ${{ secrets.DOCKERHUB_USERNAME }}/immersive-project1:latest
